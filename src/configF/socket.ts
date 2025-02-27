@@ -16,57 +16,35 @@ export const initializeSocket = (httpServer: HttpServer) => {
     console.log(`New client connected: ${socket.id}`);
 
     // Handle signaling for video call
-    socket.on("send_offer", (offer: RTCSessionDescriptionInit, roomId: string) => {
-      console.log(`Client ${socket.id} sending offer to room ${roomId}`);
-      socket.to(roomId).emit("receive_offer", offer, socket.id);
+    socket.on("send_offer", (offer: any, roomId: string) => {
+      console.log(`Sending offer to room ${roomId}`);
+      socket.to(roomId).emit("receive_offer", offer, socket.id); // Send the offer to all other users in the room
     });
 
-    socket.on("send_answer", (answer: RTCSessionDescriptionInit, roomId: string) => {
-      console.log(`Client ${socket.id} sending answer to room ${roomId}`);
-      socket.to(roomId).emit("receive_answer", answer);
+    socket.on("send_answer", (answer: any, roomId: string) => {
+      console.log(`Sending answer to room ${roomId}`);
+      socket.to(roomId).emit("receive_answer", answer); // Send the answer to all other users in the room
     });
 
-    socket.on("send_ice_candidate", (candidate: RTCIceCandidateInit, roomId: string) => {
-      console.log(`Client ${socket.id} sending ICE candidate to room ${roomId}`);
-      socket.to(roomId).emit("receive_ice_candidate", candidate);
+    socket.on("send_ice_candidate", (candidate: any, roomId: string) => {
+      console.log(`Sending ICE candidate to room ${roomId}`);
+      socket.to(roomId).emit("receive_ice_candidate", candidate); // Send ICE candidate to other peers
     });
 
     // Handle joining a room for video calls
     socket.on("join_room", (roomId: string) => {
-      socket.join(roomId);
-      
-      // Notify others in the room
-      const clients = io.sockets.adapter.rooms.get(roomId);
-      const numClients = clients ? clients.size : 0;
-      
-      console.log(`Client ${socket.id} joined room: ${roomId} (${numClients} clients)`);
-      
-      // You can also notify other participants (optional)
-      socket.to(roomId).emit("user_joined", { userId: socket.id });
-    });
-
-    // Handle leaving a room
-    socket.on("leave_room", (roomId: string) => {
-      socket.leave(roomId);
-      console.log(`Client ${socket.id} left room: ${roomId}`);
-      socket.to(roomId).emit("user_left", { userId: socket.id });
+      socket.join(roomId); // Join the specified room
+      console.log(`${socket.id} joined room: ${roomId}`);
     });
 
     // Handle disconnection
     socket.on("disconnect", () => {
       console.log(`Client disconnected: ${socket.id}`);
-      // You could notify rooms this user was in that they've disconnected
     });
   });
 
   console.log("Socket server initialized.");
-  return io;
 };
 
-// Helper method to get the socket instance
-export const getSocketInstance = () => {
-  if (!io) {
-    throw new Error("Socket.IO has not been initialized. Call initializeSocket first.");
-  }
-  return io;
-};
+// Helper method to get the socket instance (optional)
+export const getSocketInstance = () => io;
