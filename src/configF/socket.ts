@@ -7,7 +7,7 @@ let io: SocketIOServer;
 export const initializeSocket = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "http://192.168.1.42:3000", // Adjust this based on your frontend URL for security
+      origin: "*", // Adjust this based on your frontend URL for security
       methods: ["GET", "POST"],
     },
   });
